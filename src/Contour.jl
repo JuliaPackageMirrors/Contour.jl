@@ -21,8 +21,7 @@ function contour(x, y, z, level::Number)
     trace_contour(x, y, z,level,get_level_cells(z,level))
 end
 contours(x,y,z,levels) = [contour(x,y,z,l) for l in levels]
-function contours(x,y,z,Nlevels::Integer)
-    contours(x,y,z,contourlevels(z,Nlevels))
+function contours(x,y,z,Nlevels::Integer) contours(x,y,z,contourlevels(z,Nlevels))
 end
 contours(x,y,z) = contours(x,y,z,10)
 
@@ -153,7 +152,7 @@ end
 # Given the row and column indices of the lower left
 # vertex, add the location where the contour level
 # crosses the specified edge.
-function interpolate{T<:FloatingPoint}(x, y, z::Matrix{T}, h::Number, xi::Int, yi::Int, edge::Uint8)
+function interpolate{T<:FloatingPoint}(x::Vector{Float64}, y::Vector{Float64}, z::Matrix{T}, h::Number, xi::Int, yi::Int, edge::Uint8)
     if edge == W
         y_interp = y[yi] + (y[yi+1] - y[yi])*(h - z[xi,yi])/(z[xi,yi+1] - z[xi,yi])
         x_interp = x[xi]
@@ -170,6 +169,29 @@ function interpolate{T<:FloatingPoint}(x, y, z::Matrix{T}, h::Number, xi::Int, y
 
     return x_interp, y_interp
 end
+
+function interpolate{T<:FloatingPoint}(x::Matrix{Float64}, y::Matrix{Float64}, z::Matrix{T}, h::Number, xi::Int, yi::Int, edge::Uint8)
+    if edge == W
+        Δ = [y[xi,  yi+1] - y[xi,  yi  ], x[xi,  yi+1] - x[xi,  yi  ]].*(h - z[xi,  yi  ])/(z[xi,  yi+1] - z[xi,  yi  ])
+        y_interp = y[xi,yi] + Δ[1]
+        x_interp = x[xi,yi] + Δ[2]
+    elseif edge == E
+        Δ = [y[xi+1,yi+1] - y[xi+1,yi  ], x[xi+1,yi+1] - x[xi+1,yi  ]].*(h - z[xi+1,yi  ])/(z[xi+1,yi+1] - z[xi+1,yi  ])
+        y_interp = y[xi+1,yi] + Δ[1]
+        x_interp = x[xi+1,yi] + Δ[2]
+    elseif edge == N
+        Δ = [y[xi+1,yi+1] - y[xi,  yi+1], x[xi+1,yi+1] - x[xi,  yi+1]].*(h - z[xi,  yi+1])/(z[xi+1,yi+1] - z[xi,  yi+1])
+        y_interp = y[xi,yi+1] + Δ[1]
+        x_interp = x[xi,yi+1] + Δ[2]
+    elseif edge == S
+        Δ = [y[xi+1,yi  ] - y[xi,  yi  ], x[xi+1,yi  ] - x[xi,  yi  ]].*(h - z[xi,  yi  ])/(z[xi+1,yi  ] - z[xi,  yi  ])
+        y_interp = y[xi+1,yi] + Δ[1]
+        x_interp = x[xi+1,yi] + Δ[2]
+    end
+
+    return x_interp, y_interp
+end
+
 
 # Given a cell and a starting edge, we follow the contour line until we either
 # hit the boundary of the input data, or we form a closed contour.
