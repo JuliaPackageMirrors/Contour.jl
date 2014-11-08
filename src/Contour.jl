@@ -152,7 +152,7 @@ end
 # Given the row and column indices of the lower left
 # vertex, add the location where the contour level
 # crosses the specified edge.
-function interpolate{T<:FloatingPoint}(x::AbstractVector{T}, y::AbstractVector{T}, z::Matrix{T}, h::Number, xi::Int, yi::Int, edge::Uint8)
+function interpolate{T<:FloatingPoint}(x::AbstractVector, y::AbstractVector, z::Matrix{T}, h::Number, xi::Int, yi::Int, edge::Uint8)
     if edge == W
         y_interp = y[yi] + (y[yi+1] - y[yi])*(h - z[xi,yi])/(z[xi,yi+1] - z[xi,yi])
         x_interp = x[xi]
@@ -170,7 +170,7 @@ function interpolate{T<:FloatingPoint}(x::AbstractVector{T}, y::AbstractVector{T
     return x_interp, y_interp
 end
 
-function interpolate{T<:FloatingPoint}(x::AbstractMatrix{T}, y::AbstractMatrix{T}, z::Matrix{T}, h::Number, xi::Int, yi::Int, edge::Uint8)
+function interpolate{T<:FloatingPoint}(x::AbstractMatrix, y::AbstractMatrix, z::Matrix{T}, h::Number, xi::Int, yi::Int, edge::Uint8)
     if edge == W
         Δ = [y[xi,  yi+1] - y[xi,  yi  ], x[xi,  yi+1] - x[xi,  yi  ]].*(h - z[xi,  yi  ])/(z[xi,  yi+1] - z[xi,  yi  ])
         y_interp = y[xi,yi] + Δ[1]
